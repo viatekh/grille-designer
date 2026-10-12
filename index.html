@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grille Designer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Grille&nbsp;Designer</div>
+    <div class="group" id="tools">
+      <button data-tool="brush" title="Brush (B)">✎<span>Brush</span></button>
+      <button data-tool="line" title="Line (L) — Shift snaps to 15°">╱<span>Line</span></button>
+      <button data-tool="rect" title="Rectangle (R) — Shift square, Alt from centre">▭<span>Rect</span></button>
+      <button data-tool="ellipse" title="Ellipse (O) — Shift circle, Alt from centre">◯<span>Ellipse</span></button>
+      <button data-tool="stamp" title="Stamp shape (S) — drag a box, or click">★<span>Stamp</span></button>
+      <button data-tool="text" title="Text (T) — click to place">T<span>Text</span></button>
+      <button data-tool="fill" title="Bucket fill (F)">◉<span>Fill</span></button>
+      <button data-tool="pan" title="Pan (H) — or hold Space / middle mouse">✋<span>Pan</span></button>
+    </div>
+    <div class="group seg" id="modeSeg" title="Paint mode (X). Right-click paints the opposite.">
+      <button data-mode="1" class="active">● Punch</button>
+      <button data-mode="0">○ Blank</button>
+    </div>
+    <div class="group">
+      <button id="undoBtn" title="Undo (Ctrl+Z)">↶</button>
+      <button id="redoBtn" title="Redo (Ctrl+Shift+Z / Ctrl+Y)">↷</button>
+      <button id="fitBtn" title="Fit to screen (0)">⤢</button>
+    </div>
+    <div class="group">
+      <button id="allBtn" title="Punch every hole">Fill all</button>
+      <button id="clearBtn" title="Blank every hole">Clear</button>
+      <button id="invertBtn" title="Invert (I)">Invert</button>
+    </div>
+    <div class="group seg" id="viewSeg" title="Toggle view (P)">
+      <button data-view="edit" class="active">Edit</button>
+      <button data-view="preview">Preview</button>
+    </div>
+    <div class="group" title="Finish used by Preview and PNG export">
+      <select id="finishSel">
+        <option value="silver">Brushed steel</option>
+        <option value="black">Black powder coat</option>
+        <option value="white">White powder coat</option>
+        <option value="brass">Brass</option>
+        <option value="copper">Copper</option>
+        <option value="bronze">Anodised bronze</option>
+      </select>
+      <label class="check inline"><input type="checkbox" id="backlight"> Backlit</label>
+    </div>
+  </header>
+
+  <main>
+    <aside class="panel left">
+      <details open>
+        <summary>Perforated sheet</summary>
+        <label>Stock material
+          <select id="materialSel"></select>
+        </label>
+        <div class="row">
+          <label>Hole Ø (mm)<input type="number" data-cfg="d" step="0.05" min="0.3"></label>
+          <label>Pitch (mm)<input type="number" data-cfg="c" step="0.05" min="0.5"></label>
+        </div>
+        <div class="row">
+          <label>Pattern
+            <select data-cfg="pattern">
+              <option value="60">60° staggered</option>
+              <option value="45">45° staggered</option>
+              <option value="square">Square / straight</option>
+            </select>
+          </label>
+          <label>Rows run
+            <select data-cfg="orient">
+              <option value="h">Horizontal</option>
+              <option value="v">Vertical</option>
+            </select>
+          </label>
+        </div>
+        <label>Sheet thickness (mm)<input type="number" data-cfg="thickness" step="0.1" min="0.3"></label>
+        <div class="info" id="materialInfo"></div>
+      </details>
+
+      <details open>
+        <summary>Grille size</summary>
+        <label>Quick size
+          <select id="quickSize"><option value="">— choose a common size —</option></select>
+        </label>
+        <label>Shape
+          <select data-cfg="shape">
+            <option value="rect">Rectangle / rounded</option>
+            <option value="ellipse">Circle / ellipse</option>
+          </select>
+        </label>
+        <div class="row">
+          <label>Width (mm)<input type="number" data-cfg="width" step="1" min="10"></label>
+          <label>Height (mm)<input type="number" data-cfg="height" step="1" min="10"></label>
+        </div>
+        <div class="row">
+          <label id="radiusLbl">Corner radius<input type="number" data-cfg="radius" step="1" min="0"></label>
+          <label title="Unperforated border around the edge">Solid margin<input type="number" data-cfg="margin" step="0.5" min="0"></label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Mounting holes</summary>
+        <label class="check"><input type="checkbox" data-cfg="mount.on"> Add mounting holes</label>
+        <div class="row">
+          <label>Count
+            <select data-cfg="mount.count" data-num>
+              <option value="4">4</option><option value="6">6</option><option value="8">8</option>
+            </select>
+          </label>
+          <label>Hole Ø<input type="number" data-cfg="mount.d" step="0.1" min="1"></label>
+        </div>
+        <div class="row">
+          <label>Inset<input type="number" data-cfg="mount.inset" step="0.5" min="0"></label>
+          <label title="Solid ring kept around each mounting hole">Keep-out<input type="number" data-cfg="mount.keepout" step="0.5" min="0"></label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Driver guides</summary>
+        <p class="hint">Dashed circles to help lay out a design around the drivers (X/Y from the centre, Y up). Not exported as cuts.</p>
+        <div class="row three">
+          <label>Ø (mm)<input type="number" id="gD" value="165" min="5"></label>
+          <label>X<input type="number" id="gX" value="0"></label>
+          <label>Y<input type="number" id="gY" value="0"></label>
+        </div>
+        <button id="addGuide" class="wide">+ Add guide</button>
+        <ul id="guideList" class="list"></ul>
+        <button id="punchGuides" class="wide subtle" title="Punch only the holes inside the guide circles">Punch inside guides</button>
+      </details>
+
+      <details>
+        <summary>Project</summary>
+        <div class="btns">
+          <button id="saveBtn">Save .json</button>
+          <button id="loadBtn">Open…</button>
+          <input type="file" id="loadFile" accept=".json,application/json" hidden>
+        </div>
+        <button id="newBtn" class="wide subtle">New (reset everything)</button>
+        <p class="hint">Your work also autosaves in this browser.</p>
+      </details>
+    </aside>
+
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="status" id="status"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <aside class="panel right">
+      <details open>
+        <summary>Tool options</summary>
+        <label>Width <b id="brushVal"></b>
+          <input type="range" id="brush" min="1" max="120" step="0.5">
+        </label>
+        <label class="check" id="filledRow"><input type="checkbox" id="filled"> Filled shapes</label>
+        <label class="check"><input type="checkbox" id="snap"> Snap points to hole centres</label>
+        <div id="textOpts">
+          <label>Text<textarea id="txtStr" rows="2"></textarea></label>
+          <div class="row">
+            <label>Height (mm)<input type="number" id="txtSize" min="5" step="1"></label>
+            <label>Rotation°<input type="number" id="txtRot" step="5"></label>
+          </div>
+          <div class="row">
+            <label>Font
+              <select id="txtFont">
+                <option value="Arial Black, Arial, sans-serif">Sans heavy</option>
+                <option value="Helvetica, Arial, sans-serif">Sans</option>
+                <option value="Georgia, 'Times New Roman', serif">Serif</option>
+                <option value="'Courier New', monospace">Mono</option>
+                <option value="Impact, 'Arial Narrow', sans-serif">Condensed</option>
+                <option value="'Brush Script MT', 'Segoe Script', cursive">Script</option>
+              </select>
+            </label>
+            <label class="check pad"><input type="checkbox" id="txtBold"> Bold</label>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Symmetry</summary>
+        <div class="symgrid" id="symSeg">
+          <button data-sym="none" class="active" title="No symmetry">None</button>
+          <button data-sym="x" title="Mirror left ↔ right">Mirror X</button>
+          <button data-sym="y" title="Mirror top ↕ bottom">Mirror Y</button>
+          <button data-sym="xy" title="Mirror both axes (4 copies)">Mirror XY</button>
+          <button data-sym="radial" title="Rotational copies around the centre">Radial</button>
+          <button data-sym="kaleido" title="Rotational copies + mirrors (kaleidoscope)">Kaleido</button>
+        </div>
+        <label id="symNRow">Segments <b id="symNVal"></b>
+          <input type="range" id="symN" min="2" max="24" step="1">
+        </label>
+      </details>
+
+      <details open>
+        <summary>Stamps</summary>
+        <div class="stamps" id="stamps"></div>
+        <p class="hint">Pick a shape, then drag a box on the grille (or click to drop one).</p>
+      </details>
+
+      <details>
+        <summary>Patterns</summary>
+        <label>Pattern<select id="patSel"></select></label>
+        <div id="patParams"></div>
+        <label class="check"><input type="checkbox" id="patReplace"> Replace existing design</label>
+        <label class="check"><input type="checkbox" id="patGuides"> Only inside driver guides</label>
+        <div class="btns">
+          <button id="patApply" class="primary">Apply</button>
+          <button id="patCancel">Hide preview</button>
+        </div>
+      </details>
+
+      <details>
+        <summary>Image / logo import</summary>
+        <input type="file" id="imgFile" accept="image/*">
+        <div id="imgOpts" class="disabled">
+          <label>Threshold <b id="imgThrVal"></b><input type="range" id="imgThr" min="0" max="255" value="128"></label>
+          <label>Scale <b id="imgScaleVal"></b><input type="range" id="imgScale" min="5" max="300" value="90"></label>
+          <div class="row">
+            <label>Offset X<input type="number" id="imgX" value="0"></label>
+            <label>Offset Y<input type="number" id="imgY" value="0"></label>
+          </div>
+          <label class="check"><input type="checkbox" id="imgDither"> Dither (greyscale → density)</label>
+          <label class="check"><input type="checkbox" id="imgInvert"> Invert</label>
+          <label class="check"><input type="checkbox" id="imgReplace" checked> Replace existing design</label>
+          <div class="btns">
+            <button id="imgApply" class="primary">Apply</button>
+            <button id="imgCancel">Hide preview</button>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Stats</summary>
+        <div class="stats" id="stats"></div>
+      </details>
+
+      <details open>
+        <summary>Export</summary>
+        <div class="btns">
+          <button id="expSvg" title="Vector, 1:1 mm — laser / waterjet / CNC">SVG</button>
+          <button id="expDxf" title="DXF R12, mm — CAD/CAM">DXF</button>
+          <button id="expCsv" title="Hole centre coordinates">CSV</button>
+          <button id="expPng" title="Rendered preview image">PNG</button>
+        </div>
+        <p class="hint">Coordinates use the bottom-left corner of the grille as 0,0.</p>
+      </details>
+    </aside>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
