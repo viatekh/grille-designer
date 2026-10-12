@@ -99,3 +99,10 @@ input[type=file] { width: 100%; margin: 6px 0; color: var(--muted); }
   .panel { width: 230px; }
   #tools button span { display: none; }
 }
+
+@media (max-width: 700px) {
+  body { overflow: auto; }
+  main { flex-direction: column; }
+  .stage { flex: none; height: 70vh; order: -1; }
+  .panel { width: 100%; overflow: visible; border: none; border-top: 1px solid var(--line); }
+}

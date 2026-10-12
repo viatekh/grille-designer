@@ -1064,8 +1064,11 @@ ${holes.join('\n')}
     try { loadProject(JSON.parse(await f.text())); fitView(); toast('Project loaded'); }
     catch (err) { toast('Could not open: ' + err.message); }
   });
-  $('#newBtn').addEventListener('click', () => {
-    if (!confirm('Start a new design? Unsaved work will be lost.')) return;
+  let newArmed = 0;
+  $('#newBtn').addEventListener('click', (e) => {
+    // two-click confirm (window.confirm is unavailable in some embedded viewers)
+    if (Date.now() - newArmed > 3000) { newArmed = Date.now(); e.target.textContent = 'Click again to reset everything'; setTimeout(() => (e.target.textContent = 'New (reset everything)'), 3000); return; }
+    newArmed = 0; e.target.textContent = 'New (reset everything)';
     S.cfg = structuredClone(DEFAULT_CFG); S.guides = []; S.sym = { type: 'none', n: 6 };
     generate(false); S.undo.length = S.redo.length = 0; syncUI(); changed(); fitView();
   });
